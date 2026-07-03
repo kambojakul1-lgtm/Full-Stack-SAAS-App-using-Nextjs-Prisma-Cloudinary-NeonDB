@@ -1,20 +1,24 @@
-import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient()
+export async function GET() {
+  try {
+    const videos = await prisma.video.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-export async function GET(request: NextRequest){
-    try {
-        const videos = await prisma.video.findMany({
-            orderBy: {
-                createdAt: "desc"
-            }
-        })
-        return NextResponse.json(videos)
-    } catch (error) {
-        return NextResponse.json({error: "Error fetching videos"}, {status: 500})
-    } finally {
-        await prisma.$disconnect()
-    }
+    return NextResponse.json(videos);
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+
+    return NextResponse.json(
+      { error: "Error fetching videos" },
+      { status: 500 }
+    );
+  }
 }
